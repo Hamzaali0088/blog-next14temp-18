@@ -3,12 +3,19 @@ import Container from '../components/common/Container'
 import Navbar from '../components/common/Navbar'
 import FullContainer from '../components/common/FullContainer'
 import Footer from '../components/common/Footer'
+import {
+    callBackendApi,
+    getDomain,
+    getImagePath,
+    sanitizeUrl,
+  } from "@/lib/myFun";
+  
 
-export default function ContactUs() {
+export default function ContactUs({ logo, categories, imagePath, blog_list }) {
     return (
         <FullContainer className='bg-secondarydark '>
-            <Navbar />
-            <Container className="flex flex-col md:flex-row gap-10 text-black py-24 max-w-[1200px]">
+            <Navbar logo={logo} categories={categories} imagePath={imagePath} />
+            <Container className="flex flex-col md:flex-row gap-10 text-black py-24 md:pt-36 max-w-[1200px]">
                 <div className="w-full md:w-[40%] ">
                     <h2 className='text-7xl font-montserrat font-extrabold pb-8'>Let’s get in touch today!</h2>
                     <p className='text-gray-500'>In vestibulum maximus lectus nec vestibulum. Donec porttitor, dui sit amet malesuada posuere, orci lectus porttitor nulla, interdum pellentesque nibh ex non erat.</p>
@@ -33,7 +40,38 @@ export default function ContactUs() {
                     </form>
                 </div>
             </Container>
-            <Footer />
+            <Footer logo={logo} categories={categories} imagePath={imagePath} blog_list={blog_list} />
         </FullContainer>
     );
 }
+
+export async function getServerSideProps({ req }) {
+    const domain = getDomain(req?.headers?.host);
+    const logo = await callBackendApi({ domain, tag: "logo" });
+    const project_id = logo?.data[0]?.project_id || null;
+  
+    let layoutPages = await callBackendApi({
+      domain,
+      tag: "layout",
+    });
+  
+    const meta = await callBackendApi({ domain, tag: "meta_home" });
+    const favicon = await callBackendApi({ domain, tag: "favicon" });
+    const imagePath = await getImagePath(project_id, domain);
+    const categories = await callBackendApi({ domain, tag: "categories" });
+    const banner = await callBackendApi({ domain, tag: "banner" });
+    const blog_list = await callBackendApi({ domain, tag: "blog_list" });
+  
+    return {
+      props: {
+        logo: logo?.data?.[0] || null,
+        meta: meta?.data[0]?.value || null,
+        domain,
+        imagePath,
+        categories: categories?.data[0]?.value || [],
+        favicon: favicon?.data?.[0]?.value || null,
+        banner: banner?.data[0] || null,
+        blog_list: blog_list?.data[0]?.value || [],
+      },
+    };
+  }

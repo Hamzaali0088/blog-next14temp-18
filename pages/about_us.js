@@ -4,10 +4,11 @@ import Footer from '@/components/common/Footer'
 import Image from 'next/image'
 import banner from '@/public/images/about.png' 
 import Container from '@/components/common/Container'
-export default function about() {
+import { getDomain, getImagePath, callBackendApi } from '@/lib/myFun'
+export default function about({logo, categories, imagePath, blog_list}) {
   return (
     <div className='\'>
-      <Navbar />
+      <Navbar logo={logo} categories={categories} imagePath={imagePath} />
       <Container className='flex flex-col py-24 pt-40 items-center justify-center '>
         <h2 className='text-6xl  text-center sm:text-9xl font-bold font-montserrat uppercase '>Clean & Simple</h2>
         <p className=' text-5xl font-montserrat text-center font-semibold py-12'>About me and my blog</p>
@@ -54,7 +55,38 @@ export default function about() {
                     </div>
         </div>
       </Container>
-      <Footer />
+      <Footer  logo={logo} categories={categories} imagePath={imagePath} blog_list={blog_list}/>
     </div>
   )
+}
+
+export async function getServerSideProps({ req }) {
+  const domain = getDomain(req?.headers?.host);
+  const logo = await callBackendApi({ domain, tag: "logo" });
+  const project_id = logo?.data[0]?.project_id || null;
+
+  let layoutPages = await callBackendApi({
+    domain,
+    tag: "layout",
+  });
+
+  const meta = await callBackendApi({ domain, tag: "meta_home" });
+  const favicon = await callBackendApi({ domain, tag: "favicon" });
+  const imagePath = await getImagePath(project_id, domain);
+  const categories = await callBackendApi({ domain, tag: "categories" });
+  const banner = await callBackendApi({ domain, tag: "banner" });
+  const blog_list = await callBackendApi({ domain, tag: "blog_list" });
+
+  return {
+    props: {
+      logo: logo?.data?.[0] || null,
+      meta: meta?.data[0]?.value || null,
+      domain,
+      imagePath,
+      categories: categories?.data[0]?.value || [],
+      favicon: favicon?.data?.[0]?.value || null,
+      banner: banner?.data[0] || null,
+      blog_list: blog_list?.data[0]?.value || [],
+    },
+  };
 }

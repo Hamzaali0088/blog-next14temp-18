@@ -3,9 +3,10 @@ import Container from "./Container";
 import FullContainer from "./FullContainer";
 import Link from "next/link";
 import { Menu, Search, X } from "lucide-react";
-import { useRouter } from "next/router";
+import { sanitizeUrl } from "../../lib/myFun";
+import Logo from "./Logo";
+export default function Navbar({ logo, categories, logo_black, imagePath }) {
 
-export default function Navbar() {
   const [prevScrollPos, setPrevScrollPos] = useState(0);
   const [visible, setVisible] = useState(true);
 
@@ -60,12 +61,11 @@ export default function Navbar() {
       >
         <Container className="h-full">
           <div className="flex flex-row h-full justify-between items-center">
-            <Link
-              href="/"
-              className="text-2xl md:text-4xl font-bold font-montserrat uppercase"
+            <div
+              className="text-2xl md:text-4xl text-black font-bold font-montserrat uppercase"
             >
-              coney
-            </Link>
+            <Logo logo={logo} imagePath={imagePath} />
+            </div>
             <div className="flex flex-row gap-4 font-montserrat font-semibold text-md h-full items-center">
               <Link className={`${hoverme} hidden md:block`} href="/">
                 Home
@@ -85,13 +85,13 @@ export default function Navbar() {
                   Category
                 </div>
                 <div className={`${isDropdownOpen ? "block" : "hidden"} `}>
-                  <Dropdown />
+                  <Dropdown categories={categories} />
                 </div>
               </div>
-              <Link className={`${hoverme} hidden md:block`} href="/about">
+              <Link className={`${hoverme} hidden md:block`} href="/about_us">
                 About
               </Link>
-              <Link className={`${hoverme} hidden md:block`} href="/contact">
+              <Link className={`${hoverme} hidden md:block`} href="/contact_us">
                 Contact
               </Link>
 
@@ -184,34 +184,16 @@ export default function Navbar() {
             <div className="space-y-4">
               <h3 className="text-sm text-gray-400 uppercase">Categories</h3>
               <nav className="flex flex-col gap-3">
-                <Link
-                  href="/category/travel"
-                  className="hover:text-primary transition-colors"
-                  onClick={toggleSidebar}
+                {categories.map((category, index) => (
+                  <Link
+                    key={index}
+                    href={`/category/${sanitizeUrl(category?.title)}`}
+                    className="hover:text-primary transition-colors"
+                    onClick={toggleSidebar}
                 >
-                  Travel
+                  {category?.title}
                 </Link>
-                <Link
-                  href="/category/life-style"
-                  className="hover:text-primary transition-colors"
-                  onClick={toggleSidebar}
-                >
-                  Lifestyle
-                </Link>
-                <Link
-                  href="/category/personal"
-                  className="hover:text-primary transition-colors"
-                  onClick={toggleSidebar}
-                >
-                  Personal
-                </Link>
-                <Link
-                  href="/category/inspirational"
-                  className="hover:text-primary transition-colors"
-                  onClick={toggleSidebar}
-                >
-                  Inspirational
-                </Link>
+                ))}
               </nav>
             </div>
           </div>
@@ -221,32 +203,27 @@ export default function Navbar() {
   );
 }
 
-function Dropdown() {
-  const router = useRouter();
-  const { categories } = router.query;
+function Dropdown({ categories }) {
+
+
   const hoverme = `relative text-md font-semibold transition-all duration-300 
     after:content-[''] after:absolute after:-bottom-[2px] after:left-0 cursor-pointer 
     after:w-0 after:h-[2px] after:bg-black 
     after:transition-all after:duration-300 
     hover:text-primary hover:after:w-full`;
 
-  const categorieslist = ["Travel", "Life style", "Personal", "Inspirational"];
   return (
-    <div className="absolute top-[75px] left-0 right-0 w-full  z-50">
-      <div className="flex flex-col justify-between items-center  bg-white">
-        <div className=" flex flex-col gap-4 font-montserrat font-semibold bg-gray-100 shadow-lg border-t-2 border-primary text-md py-5 items-start px-4">
-          {categorieslist.map((category, index) => (
-            <div key={index} className={hoverme}>
-              <Link
-                href={`/category/${category
-                  .replace(/\s+/g, "-")
-                  .toLowerCase()}`}
-              >
-                {category}
+    <div className="absolute top-[75px] left-0 right-0  z-50">
+      <div className="flex flex-col justify-between items-start gap-4 border-t-2 w-fit py-4 border-primary  px-4 bg-white">
+
+          {categories.map((category, index) => (
+            <div key={index} className={hoverme }>
+              <Link className=" w-full" href={`/category/${sanitizeUrl(category?.title)}`}>
+                {category?.title}
               </Link>
             </div>
           ))}
-        </div>
+   
       </div>
     </div>
   );

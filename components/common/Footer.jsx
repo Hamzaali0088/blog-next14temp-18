@@ -1,38 +1,25 @@
 import FullContainer from "./FullContainer";
 import Container from "./Container";
 import Image from "next/image";
+import {sanitizeUrl} from "../../lib/myFun"
 import Link from "next/link";
-export default function Footer() {
+import Logo from "./Logo";
+export default function Footer({categories,logo,imagePath,blog_list}) {
+
   const hoverme = `relative text-md font-semibold transition-all duration-300 
   after:content-[''] after:absolute after:-bottom-[2px] after:left-0 cursor-pointer 
   after:w-0 after:h-[2px] after:bg-white 
   after:transition-all after:duration-300 
   hover:text-primary hover:after:w-full`
-  const latestdata = [
-    {
-      title: "Adventure Begins",
-      image: "/images/1.1.jpg",
-      date: "10 May 2024",
-      category: "Travel",
-      description:
-        "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos this is for testing and got surprised.",
-    },
-    {
-      title: "Urban Lifestyle Tips",
-      image: "/images/1.2.jpg",
-      date: "12 May 2024",
-      category: "Life Style",
-      description:
-        "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos this is for testing and got surprised.",
-    },
-  ];
-  const categories = ["personal", "life style", "inspirational", "travel"];
+  const latestdata = blog_list.filter((item)=>item.published_at).sort((a,b)=>new Date(b.published_at)-new Date(a.published_at)).slice(0,3)
+
+ 
   return (
     <FullContainer className="bg-black py-10">
       <Container className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 text-start  border-white/20 pb-10 gap-6 ">
         <div className="   md:col-span-2">
-          <h2 className="text-white text-2xl font-bold font-montserrat pb-4">
-            logo
+          <h2 className="text-white text-start flex text-2xl md:text-4xl uppercase font-bold font-montserrat pb-4">
+           <Logo logo={logo} imagePath={imagePath} />
           </h2>
           <p className="text-white text-lg font-montserrat pb-8">
             Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam,
@@ -56,11 +43,11 @@ export default function Footer() {
             <div className="flex flex-col gap-2">
               {categories.map((category, index) => (
                 <Link
-                  href={`/category/${category.replace(/\s+/g, '-').toLowerCase()}`}
+                href={`/category/${sanitizeUrl(category?.title)}`}
                   key={index}
                   className="text-gray-500 hover:text-white hover:scale-105 transition-all duration-300 cursor-pointer font-montserrat text-md border rounded-[4px] w-full px-4 py-3 border-gray-300 hover:border-white"
                 >
-                  {category}
+                  {category?.title}
                 </Link>
               ))}
             </div>
@@ -74,20 +61,20 @@ export default function Footer() {
             <div className="flex flex-col gap-8">
               {latestdata.map((item, index) => (
                 <div key={index} className="flex gap-4 items-center">
-                  <div className="min-w-[70px] h-[70px] relative rounded-full overflow-hidden">
+                  <Link href={`/category/${sanitizeUrl(item?.article_category)}/${sanitizeUrl(item?.title)}`} className="min-w-[70px] h-[70px] relative rounded-full overflow-hidden">
                     <Image
-                      src={item.image}
+                      src={`${imagePath}/${item?.image}`}
                       alt={item.title}
                       fill
                       className="object-cover"
                     />
-                  </div>
+                  </Link>
                   <div className="flex flex-col">
                     <h2 className="text-md text-gray-200 leading-tight font-montserrat font-semibold line-clamp-2">
-                      {item.description}
+                      {item?.tagline}
                     </h2>
                     <p className="text-gray-300 font-montserrat text-sm mt-1">
-                      {item.date}
+                      {item?.published_at}
                     </p>
                   </div>
                 </div>
